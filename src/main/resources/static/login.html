@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Group Management System</title>
+    <style>
+        /* CSS chung cho toàn bộ giao diện */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #218838;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .login-container button:hover {
+            background-color: #218838;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .login-container h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.7em;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login</h2>
+    <h3>Group Management System</h3>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="error-message" class="error-message"></div>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Kiểm tra thông tin đăng nhập (thực tế bạn sẽ kiểm tra với API hoặc cơ sở dữ liệu)
+        if (username === "minh" && password === "minh") {
+            // Chuyển hướng tới màn hình chính
+            window.location.href = "http://localhost:63342/ontapbackend/static/index.html?_ijt=9jo8vjo6musetcmht1rtklmsse&_ij_reload=RELOAD_ON_SAVE";  // Trang chính của hệ thống
+        } else {
+            // Hiển thị thông báo lỗi
+            document.getElementById("error-message").innerText = "Invalid username or password!";
+        }
+    }
+</script>
+
+</body>
+</html>

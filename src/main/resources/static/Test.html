@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .menu-left {
+            width: 250px;
+            background: #34495e;
+            color: white;
+            position: fixed;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .menu-left ul {
+            list-style: none;
+        }
+
+        .menu-left li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .menu-left li:hover {
+            background: #2c3e50;
+        }
+
+        .body-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-left: 250px;
+        }
+
+        /* Table Styles */
+        .group-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .group-table th, .group-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .group-table th {
+            background: #f8f9fa;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            width: 400px;
+            border-radius: 5px;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .modal button {
+            padding: 10px 20px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Account Management Styles */
+        .account-management, .department-management {
+            display: none; /* Initially hidden */
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>Group Management System</h1>
+    </header>
+    <nav class="menu-left">
+        <ul>
+            <li onclick="switchTab('home')">Home</li>
+            <li onclick="switchTab('group')">Department Management</li>
+            <li onclick="switchTab('account')">Account Management</li>
+        </ul>
+    </nav>
+    <main class="body-content">
+        <!-- Group Management Tab -->
+        <div id="group" class="tab-content active department-management">
+            <h2>Department Management</h2>
+            <table class="group-table" id="departmentTable">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Department Name</th>
+                    <th>Members</th>
+                    <th>Type</th>
+                    <th>Create Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="departmentTableBody">
+                <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Account Management Tab -->
+        <div id="account" class="tab-content account-management">
+            <h2>Account Management</h2>
+            <table class="group-table" id="accountTable">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>User Name</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                </tr>
+                </thead>
+                <tbody id="accountTableBody">
+                <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal for Editing Department -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Department</h3>
+        <form id="editForm">
+            <input type="text" id="departmentName" placeholder="Department Name" required />
+            <input type="number" id="departmentMembers" placeholder="Members" required />
+            <input type="text" id="departmentType" placeholder="Type" required />
+            <input type="date" id="departmentCreatedDate" placeholder="Create Date" required />
+            <button type="submit">Save Changes</button>
+        </form>
+        <button onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    // Fetch department data from API and populate the table
+    function fetchDepartments() {
+        fetch('http://localhost:8111/api/v1/departments')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API response not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data from API:', data);
+                const departmentTableBody = document.getElementById('departmentTableBody');
+                departmentTableBody.innerHTML = ''; // Clear existing rows
+
+                if (data.length === 0) {
+                    departmentTableBody.innerHTML = '<tr><td colspan="6">No departments found</td></tr>';
+                } else {
+                    data.forEach((department, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${department.name}</td>
+                            <td>${department.member}</td>
+                            <td>${department.type}</td>
+                            <td>${new Date(department.createdDate).toLocaleDateString()}</td>
+                            <td>
+                                <button onclick="editDepartment(${department.id})">Edit</button>
+                                <button onclick="deleteDepartment(${department.id})">Delete</button>
+                            </td>
+                        `;
+                        departmentTableBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching departments:', error);
+                const departmentTableBody = document.getElementById('departmentTableBody');
+                departmentTableBody.innerHTML = '<tr><td colspan="6">Failed to load departments.</td></tr>';
+            });
+    }
+
+    // Edit department functionality
+    function editDepartment(departmentId) {
+        // Fetch the department data by ID and populate the form fields
+        fetch(`http://localhost:8111/api/v1/departments/${departmentId}`)
+            .then(response => response.json())
+            .then(department => {
+                document.getElementById('departmentName').value = department.name;
+                document.getElementById('departmentMembers').value = department.member;
+                document.getElementById('departmentType').value = department.type;
+                document.getElementById('departmentCreatedDate').value = department.createdDate;
+                // Show the modal
+                document.getElementById('editModal').style.display = 'flex';
+
+                // Handle form submission
+                document.getElementById('editForm').onsubmit = function(event) {
+                    event.preventDefault();
+                    const updatedDepartment = {
+                        name: document.getElementById('departmentName').value,
+                        member: document.getElementById('departmentMembers').value,
+                        type: document.getElementById('departmentType').value,
+                        createdDate: document.getElementById('departmentCreatedDate').value
+                    };
+
+                    fetch(`http://localhost:8111/api/v1/departments/${departmentId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedDepartment),
+                    })
+                        .then(response => response.json())
+                        .then(() => {
+                            alert('Department updated successfully');
+                            closeModal(); // Close the modal
+                            fetchDepartments(); // Reload department list
+                        })
+                        .catch(error => {
+                            console.error('Error updating department:', error);
+                            alert('Failed to update department');
+                        });
+                };
+            });
+    }
+
+    // Close modal
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Delete department functionality
+    function deleteDepartment(departmentId) {
+        if (confirm('Are you sure you want to delete this department?')) {
+            fetch(`http://localhost:8111/api/v1/departments/${departmentId}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete department');
+                    }
+                    alert('Department deleted successfully');
+                    fetchDepartments(); // Reload the department list
+                })
+                .catch(error => {
+                    console.error('Error deleting department:', error);
+                    alert('Failed to delete department');
+                });
+        }
+    }
+
+    // Switch tabs and fetch data when a tab is clicked
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(tabContent => {
+            tabContent.classList.remove('active');
+        });
+
+        document.getElementById(tab).classList.add('active');
+
+        if (tab === 'group') {
+            fetchDepartments(); // Fetch department data when the tab is selected
+        }
+
+        if (tab === 'account') {
+            fetchAccounts(); // Fetch account data when the tab is selected
+        }
+    }
+
+    // Fetch accounts data from API and populate the table
+    function fetchAccounts() {
+        fetch('http://localhost:8111/api/v1/accounts/res')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API response not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const accountTableBody = document.getElementById('accountTableBody');
+                accountTableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    accountTableBody.innerHTML = '<tr><td colspan="6">No accounts found</td></tr>';
+                } else {
+                    data.forEach((account, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${account.userName}</td>
+                            <td>${account.firstName}</td>
+                            <td>${account.lastName}</td>
+                            <td>${account.role}</td>
+                            <td>${account.departmentName}</td>
+                        `;
+                        accountTableBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching accounts:', error);
+                const accountTableBody = document.getElementById('accountTableBody');
+                accountTableBody.innerHTML = '<tr><td colspan="6">Failed to load accounts.</td></tr>';
+            });
+    }
+</script>
+</body>
+</html>
